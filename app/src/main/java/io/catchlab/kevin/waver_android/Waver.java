@@ -1,23 +1,20 @@
 package io.catchlab.kevin.waver_android;
 
 import android.media.MediaRecorder;
-import android.net.wifi.p2p.WifiP2pManager;
-import android.os.Environment;
-import android.os.Message;
-import android.support.v7.app.ActionBarActivity;
+import android.media.MediaRecorder.AudioEncoder;
+import android.media.MediaRecorder.OutputFormat;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 
 import java.io.IOException;
-import android.os.Handler;
 
 
 public class Waver extends ActionBarActivity {
     private static final String LOG_TAG = "AudioRecordTest";
-    private static String mFileName = "";
 
     private MediaRecorder mRecorder = null;
     private static final long REFRESH_INTERVAL_MS = 26;
@@ -30,19 +27,16 @@ public class Waver extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_waver);
 
-        LinearLayout layout= (LinearLayout) findViewById(R.id.root);
+        LinearLayout layout = (LinearLayout) findViewById(R.id.root);
         view = new DrawView(this);
         view.invalidate();
         layout.addView(view);
 
-        mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
-        mFileName += "/audiorecordtest.aac";
-
         mRecorder = new MediaRecorder();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC);
-        mRecorder.setOutputFile(mFileName);
+        mRecorder.setOutputFormat(OutputFormat.DEFAULT);
+        mRecorder.setAudioEncoder(AudioEncoder.DEFAULT);
+        mRecorder.setOutputFile("/dev/null");
 
         try {
             mRecorder.prepare();
@@ -63,7 +57,6 @@ public class Waver extends ActionBarActivity {
         thread.start();
 
     }
-
 
 
     private void runGameLoop() {
@@ -87,11 +80,9 @@ public class Waver extends ActionBarActivity {
         display_game();
 
 
-
         // return time taken to do redraw in ms
         return System.currentTimeMillis() - t;
     }
-
 
 
     private void display_game() {
@@ -101,7 +92,7 @@ public class Waver extends ActionBarActivity {
             @Override
             public void run() {
                 view.phase += view.phaseShift;
-                view.amplitude = Math.max(  mRecorder.getMaxAmplitude()/ 51805.5336f, 0.01f);
+                view.amplitude = (view.amplitude + Math.max(mRecorder.getMaxAmplitude() / 51805.5336f, 0.01f)) / 2;
 
                 view.invalidate();
 
