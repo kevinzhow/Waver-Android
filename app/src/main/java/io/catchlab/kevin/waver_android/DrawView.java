@@ -7,7 +7,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.drawable.ShapeDrawable;
+import android.opengl.GLSurfaceView;
 import android.util.Log;
+import android.view.SurfaceView;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -17,18 +19,20 @@ import java.util.ArrayList;
  */
 public class DrawView extends View {
     public  int numberOfWaves = 5;
-    public float frequency = 1.5f;
-    public float density = 15.f;
+    public float frequency = 1.2f;
+    public float density = 1.f;
     public float phaseShift = -0.25f;
     public float phase = 0.f;
     public float maxAmplitude = 0;
+
+    private boolean drawlock = false;
 
     private  ArrayList<Paint> paintsArray= new ArrayList<>();
     private  ArrayList<Path> pathArray= new ArrayList<>();
     private  int ViewWidth = 0;
     private  int ViewHeight = 0;
     private  float ViewMid = 0;
-    public float amplitude = 0;
+    public float amplitude = 1.0f;
 
     public DrawView(Context context) {
         super(context);
@@ -77,7 +81,11 @@ public class DrawView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
+        if (drawlock){
+            return;
+        }else{
+            drawlock = true;
+        }
         for (int i  = 0; i< numberOfWaves; i++)
         {
             Path path2 = new Path();
@@ -91,7 +99,7 @@ public class DrawView extends View {
                 // We use a parable to scale the sinus wave, that has its peak in the middle of the view.
                 double scaling = -Math.pow(x / ViewMid  - 1.f, 2.f) + 1.f; // make center bigger
 
-                double y = scaling * maxAmplitude * normedAmplitude * Math.sin(2 * 3.14159 *(x / ViewWidth) * frequency + phase) + ViewHeight/2.0;
+                double y = scaling * maxAmplitude * normedAmplitude * Math.sin(2 * 3.141 *(x / ViewWidth) * frequency + phase) + ViewHeight/2.0;
 
                 if (x==0.f) {
 
@@ -103,7 +111,10 @@ public class DrawView extends View {
             }
             Paint p = paintsArray.get(i);
             canvas.drawPath(path2, p);
+
         }
+
+        drawlock = false;
 
 
 

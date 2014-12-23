@@ -18,24 +18,12 @@ import android.os.Handler;
 public class Waver extends ActionBarActivity {
     private static final String LOG_TAG = "AudioRecordTest";
     private static String mFileName = "";
-    private static final int COMPLETED = 0;
+
     private MediaRecorder mRecorder = null;
-    private static final long REFRESH_INTERVAL_MS = 21;
+    private static final long REFRESH_INTERVAL_MS = 26;
     private boolean keepGoing = true;
     private DrawView view;
 
-    private Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            if (msg.what == COMPLETED) {
-
-                view.phase += view.phaseShift;
-                view.amplitude = Math.max(  mRecorder.getMaxAmplitude()/ 51805.5336f, 0.01f);
-
-                view.invalidate();
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +55,7 @@ public class Waver extends ActionBarActivity {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
+
                 runGameLoop();
             }
         });
@@ -95,44 +84,29 @@ public class Waver extends ActionBarActivity {
         // At this point perform changes to the model that the component will
         // redraw
 
-        updateModel();
+        display_game();
 
-        // draw the model state to a buffered image which will get
-        // painted by component.paint().
-        drawModelToImageBuffer();
 
-        // asynchronously signals the paint to happen in the awt event
-        // dispatcher thread
-//        component.repaint();
-
-        // use a lock here that is only released once the paintComponent
-        // has happened so that we know exactly when the paint was completed and
-        // thus know how long to pause till the next redraw.
-        waitForPaint();
 
         // return time taken to do redraw in ms
         return System.currentTimeMillis() - t;
     }
 
-    private void updateModel() {
-        // do stuff here to the model based on time
-        display_game();
-    }
 
-    private void drawModelToImageBuffer() {
-
-    }
-
-    private void waitForPaint() {
-
-    }
 
     private void display_game() {
 
 
-        Message msg = new Message();
-        msg.what = COMPLETED;
-        handler.sendMessage(msg);
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                view.phase += view.phaseShift;
+                view.amplitude = Math.max(  mRecorder.getMaxAmplitude()/ 51805.5336f, 0.01f);
+
+                view.invalidate();
+
+            }
+        });
 
 //        Log.v("Game", "Display Game" + view.phase);
     }
